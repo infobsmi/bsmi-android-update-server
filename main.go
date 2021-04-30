@@ -1,5 +1,5 @@
 package main
-
+//
 import (
 	. "github.com/cnmade/bsmi-android-update-server/app/controller"
 	"github.com/cnmade/bsmi-android-update-server/pkg/common"
