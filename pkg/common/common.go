@@ -177,11 +177,11 @@ var (
 )
 
 func InitApp() {
-	Config = GetConfig()
+	//Config = GetConfig()
 //	gin.SetMode(Config.SrvMode)
 	gin.SetMode("debug")
 	//DB = GetDB(Config)
-	NewDb = GetNewDb(Config)
+//	NewDb = GetNewDb(Config)
 	defer Logger.Sync()
 	Sugar = Logger.Sugar()
 }
