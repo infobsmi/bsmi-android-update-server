@@ -1,70 +1,54 @@
 package controller
 
 import (
-	"github.com/gin-gonic/gin"
-	"github.com/cnmade/bsmi-android-update-server/pkg/common"
-
 	"database/sql"
 	"fmt"
+	"github.com/cnmade/bsmi-android-update-server/pkg/common"
+	"github.com/gin-gonic/gin"
 	_ "github.com/mattn/go-sqlite3"
+	"github.com/mmcdole/gofeed"
 	"net/http"
+	"os"
 	"strconv"
+	"strings"
 )
 
 type Api struct {
 }
 
-type apiBlogList struct {
-	Aid   string `form:"aid" json:"aid"  binding:"required"`
-	Title string `form:"title" json:"title"  binding:"required"`
+type updateItem struct {
+	Link   string `json:"link"`
+	Guid string `json:"guid"`
+	Ts  string `json:"ts"`
+	Version string `json:"version"`
 }
 
 func (a *Api) Index(c *gin.Context) {
-	page, err := strconv.Atoi(c.DefaultQuery("page", "1"))
-	if err != nil {
-		common.Sugar.Fatal(err)
-	}
-	page -= 1
-	if page < 0 {
-		page = 0
-	}
 
-	prev_page := page
-	if prev_page < 1 {
-		prev_page = 1
-	}
+	fi, _ := os.Open("./feed.xml")
+	defer fi.Close()
+	fp := gofeed.NewParser()
+	feed, _ := fp.Parse(fi)
 
-	rpp := 20
-	offset := page * rpp
-	var blogListSlice []apiBlogList
-
-		rows, err := common.DB.Query("Select aid, title from gs_article where publish_status = 1 order by aid desc limit ? offset ? ", &rpp, &offset)
-		if err != nil {
-			common.Sugar.Fatal(err)
-		}
-		defer common.CloseRowsDefer(rows)
-		if rows != nil {
-			var (
-				aid   sql.NullString
-				title sql.NullString
-			)
-			blogListSlice = make([]apiBlogList, 0) //Must be zero slice
-			var aBlog apiBlogList
-			for rows.Next() {
-				err := rows.Scan(&aid, &title)
-				if err != nil {
-					common.Sugar.Fatal(err)
-				}
-				aBlog.Aid = aid.String
-				aBlog.Title = title.String
-				blogListSlice = append(blogListSlice, aBlog)
-			}
-			err = rows.Err()
-			if err != nil {
-				common.Sugar.Fatal(err)
+	var updateList []updateItem
+	for _, item := range feed.Items {
+		tmpVersion := ""
+		tmpA := strings.Split(item.Content, "<br/>")
+		if len(tmpA) > 2 {
+			rawVersion := tmpA[1]
+			if (rawVersion != "") {
+				tmpVersion = rawVersion[9:]
 			}
 		}
-	c.JSON(http.StatusOK, blogListSlice)
+		updateList = append(updateList, updateItem{
+			Link: item.Link,
+			Guid: item.GUID,
+			Ts: item.Published,
+			Version: tmpVersion,
+		} )
+	}
+
+	c.JSON(http.StatusOK, updateList)
 }
 
 type apiBlogItem struct {
