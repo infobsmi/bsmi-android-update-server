@@ -10,10 +10,20 @@ import (
 	"github.com/rs/zerolog/log"
 
 	"gitee.com/cnmade/pongo2gin"
+
+
+	"time"
+
+	"github.com/gin-contrib/cache"
+	"github.com/gin-contrib/cache/persistence"
 )
 
 func main() {
 	common.InitApp()
+
+
+	pstore := persistence.NewInMemoryStore(time.Second)
+
 	r := gin.New()
 	r.HTMLRender = pongo2gin.New(pongo2gin.RenderOptions{
 		TemplateDir: "views",
@@ -29,7 +39,7 @@ func main() {
 	a := new(Api)
 	api := r.Group("/api")
 	{
-		api.GET("/", a.Index)
+		api.GET("/",  cache.CachePage(pstore, time.Minute, a.Index))
 		api.GET("view/:id", a.View)
 	}
 	log.Info().Msg("Server listen on 127.0.0.1:8086")
