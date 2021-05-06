@@ -8,7 +8,6 @@ import (
 	_ "github.com/mattn/go-sqlite3"
 	"github.com/mmcdole/gofeed"
 	"net/http"
-	"os"
 	"strconv"
 	"strings"
 )
@@ -25,10 +24,11 @@ type updateItem struct {
 
 func (a *Api) Index(c *gin.Context) {
 
-	fi, _ := os.Open("./feed.xml")
-	defer fi.Close()
+	//fi, _ := os.Open("./feed.xml")
+//	defer fi.Close()
 	fp := gofeed.NewParser()
-	feed, _ := fp.Parse(fi)
+	//feed, _ := fp.Parse(fi)
+	feed, _ := fp.ParseURL("https://apkcombo.com/latest-updates/feed")
 
 	var updateList []updateItem
 	for _, item := range feed.Items {
