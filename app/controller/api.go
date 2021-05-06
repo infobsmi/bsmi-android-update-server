@@ -3,53 +3,52 @@ package controller
 import (
 	"database/sql"
 	"fmt"
+	"github.com/cnmade/bsmi-android-update-server/app/orm/model"
+	"github.com/cnmade/bsmi-android-update-server/app/vo"
 	"github.com/cnmade/bsmi-android-update-server/pkg/common"
 	"github.com/gin-gonic/gin"
 	_ "github.com/mattn/go-sqlite3"
-	"github.com/mmcdole/gofeed"
 	"net/http"
 	"strconv"
-	"strings"
-
 )
 
 type Api struct {
 }
 
-type updateItem struct {
-	Link   string `json:"link"`
-	Guid string `json:"guid"`
-	Ts  string `json:"ts"`
-	Version string `json:"version"`
-}
 
 func (a *Api) Index(c *gin.Context) {
 
-	//fi, _ := os.Open("./feed.xml")
-//	defer fi.Close()
-	fp := gofeed.NewParser()
-	//feed, _ := fp.Parse(fi)
-	feed, _ := fp.ParseURL("https://apkcombo.com/latest-updates/feed")
+	var reqJson vo.IndexReq
 
-	var updateList []updateItem
-	for _, item := range feed.Items {
-		tmpVersion := ""
-		tmpA := strings.Split(item.Content, "<br/>")
-		if len(tmpA) > 2 {
-			rawVersion := tmpA[1]
-			if (rawVersion != "") {
-				tmpVersion = rawVersion[9:]
-			}
-		}
-		updateList = append(updateList, updateItem{
-			Link: item.Link,
-			Guid: item.GUID,
-			Ts: item.Published,
-			Version: tmpVersion,
-		} )
+
+	 updateInfoList := make([]model.ApkPackage, 0)
+
+	err := c.BindJSON(&reqJson)
+	if err != nil {
+		common.Sugar.Info("parse json error")
+		c.JSON(http.StatusOK, updateInfoList)
+		return
 	}
+	if reqJson.AppList == nil {
+		common.Sugar.Info("reqJson.AppList nil")
+		c.JSON(http.StatusOK, updateInfoList)
+		return
+	}
+	common.NewDb.Limit(1000).
+		Where("guid in ? ", reqJson.AppList).
+		Find(&updateInfoList)
 
-	c.JSON(http.StatusOK, updateList)
+	c.JSON(http.StatusOK, updateInfoList)
+
+}
+
+
+func (a *Api) All(c *gin.Context) {
+
+	var updateInfoList []model.ApkPackage;
+	common.NewDb.Limit(1000).Find(&updateInfoList);
+
+	c.JSON(http.StatusOK, updateInfoList)
 }
 
 type apiBlogItem struct {

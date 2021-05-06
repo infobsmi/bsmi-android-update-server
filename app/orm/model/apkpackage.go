@@ -1,11 +1,10 @@
 package model
 type ApkPackage struct {
-	Id int64
-	GappId string
-	Name string
-	Version string
-	PublishTime string
-	Views int64
+	Id int64 `json:"id"`
+	Guid string `json:"guid"`
+	Version string `json:"version"`
+	Ts string `json:"ts"`
+	Link string `json:"link"`
 }
 
 

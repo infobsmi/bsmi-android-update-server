@@ -3,3 +3,4 @@
 go.sum
 bsmi-android-update-server
 bsmi-android-update-server.exe
+*.sqlite

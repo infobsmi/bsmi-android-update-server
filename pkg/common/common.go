@@ -6,13 +6,11 @@ import (
 	"github.com/flosch/pongo2/v4"
 	"github.com/gin-gonic/gin"
 	"github.com/grokify/html-strip-tags-go"
-	"github.com/naoina/toml"
 	"github.com/ztrue/tracerr"
 	"go.uber.org/zap"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
-	"io/ioutil"
 	"log"
 	"os"
 	"strings"
@@ -148,9 +146,9 @@ type AppConfig struct {
 }
 
 func GetConfig() *AppConfig {
-	_cm := "GetConfig@pkg/common/common"
+	//_cm := "GetConfig@pkg/common/common"
 	//TODO load config from cmd line argument
-	f, err := os.Open("./vol/config.toml")
+/*	//f, err := os.Open("./vol/config.toml")
 	if err != nil {
 		panic(err)
 	}
@@ -162,6 +160,9 @@ func GetConfig() *AppConfig {
 	var config AppConfig
 	if err := toml.Unmarshal(buf, &config); err != nil {
 		Sugar.Infof(_cm + " error: %v", err)
+	}*/
+	config := AppConfig{
+		Dbdsn: "file:./db.sqlite",
 	}
 	return &config
 }
@@ -177,11 +178,11 @@ var (
 )
 
 func InitApp() {
-	//Config = GetConfig()
+	Config = GetConfig()
 //	gin.SetMode(Config.SrvMode)
 	gin.SetMode("debug")
 	//DB = GetDB(Config)
-//	NewDb = GetNewDb(Config)
+	NewDb = GetNewDb(Config)
 	defer Logger.Sync()
 	Sugar = Logger.Sugar()
 }
