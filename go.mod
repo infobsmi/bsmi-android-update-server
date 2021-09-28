@@ -5,7 +5,6 @@ go 1.15
 require (
 	gitee.com/cnmade/pongo2gin v1.0.1
 	github.com/flosch/pongo2/v4 v4.0.0
-	github.com/gin-contrib/cache v1.1.0
 	github.com/gin-contrib/sessions v0.0.3
 	github.com/gin-gonic/gin v1.6.3
 	github.com/go-co-op/gocron v1.5.0
